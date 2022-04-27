@@ -53,20 +53,39 @@ class Store {
 }
 
 // 因为Vuex 需要 Vue.use() 安装，所以我们必须要有个 install 方法 传入 Vue
-// 全局混入，将Store类挂载到 Vue 原型
 function install(Vue) {
   // 保存到全局 _Vue
   _Vue = Vue
-    // 全局注册混入 这样在所有的组件都能使用 $store
+    // 注入组件
   _Vue.mixin({
     beforeCreate() {
-      if (this.$options.store) {
-        // 把 store 挂载到 Vue 原型上
-        _Vue.prototype.$store = this.$options.store
+      if (this.$options.store) { // main.js中传入的store实例
+        _Vue.prototype.$store = this.$options.store // 挂载到 Vue 原型上，继承属性和方法
       }
     },
   })
 }
+
+// mapState
+const mapState = (arr) => {
+  // 这里我只写个数组的 起别名的就没弄哈
+  if (!Array.isArray(arr))
+    throw new Error('抱歉，当前是丐版的Vuex，只支持数组参数')
+      // 第一步就是要初始 obj ,不然[item] 会报错
+  let obj = {}
+    // 实现逻辑很简单，就是接收传递的的参数
+    // 去this.$store寻找
+  arr.forEach((item) => {
+    obj[item] = function() {
+      return this.$store.state[item]
+    }
+  })
+  return obj
+}
+
+// 导出
+export { mapState }
+
 
 // 导出 install 和 Store
 export default {
